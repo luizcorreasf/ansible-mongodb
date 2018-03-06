@@ -1,0 +1,10 @@
+- name: "Teste 2"
+  hosts: mongodb
+
+  tasks:
+  - name: "ls"
+    shell: ls -ltr /etc/ >> /home/ubuntu/output.txt
+  
+  tasks:
+  - name" "df -h"
+    shell: df -h >> /home/ubuntu/df.txt
