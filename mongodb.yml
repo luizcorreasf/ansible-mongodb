@@ -6,5 +6,5 @@
     shell: ls -ltr /etc/ >> /home/ubuntu/output.txt
   
   tasks:
-  - name" "df -h"
+  - name: "df -h"
     shell: df -h >> /home/ubuntu/df.txt
