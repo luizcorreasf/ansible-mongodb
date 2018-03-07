@@ -1,10 +1,46 @@
-- name: "Teste 2"
+#!/usr/bin/env ansible-playbook
+
+- name: Habilita Gather
+  hosts: all
+  gather_facts: True
+  tasks:
+    - name: create groups based on distribution
+      group_by: key={{ ansible_distribution }}
+
+- name: Instalacao do MongoDB
   hosts: mongodb
+  sudo: True
+  vars_prompt:
+    - name: "dbPath"
+      prompt: "Localizacao do diretorio de dados"
+      private: no
+    - name: "engine"
+      prompt: "Storage engine a ser utilizado: wiredTiger ou mmapv1"
+      private: no
+      default: "wiredTiger"
 
   tasks:
-  - name: "ls"
-    shell: ls -ltr /etc/ >> /home/ubuntu/output.txt
-  
-  tasks:
-  - name: "df -h"
-    shell: df -h >> /home/ubuntu/df.txt
+    - debug: msg="dbPath = {{ dbPath }}"
+    - debug: msg="engine = {{ engine }}"
+    - name: Executa apt-get update
+      become: true
+      apt:
+        update_cache: yes
+    - name: Instala chave para o repositorio oficial MongoDB
+      apt_key: state=present keyserver=keyserver.ubuntu.com id=EA312927
+    - name: Instala repositorio oficial do MongoDB
+      apt_repository: repo='deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse' state=present
+    - name: Instala MongoDB
+      apt: name=mongodb-org state=latest update_cache=true cache_valid_time=600
+    - name: Copia o arquivo de configuracao do template para /etc 
+      template: src=templates/mongod.conf dest=/etc/mongod.conf mode=0444 backup=yes force=yes
+    - name: Cria diretorio de dados
+      file: path={{ dbPath }} state=directory
+    - name: Configura permissoes para diretorio de dados
+      file: path={{ dbPath }} owner=mongodb group=mongodb mode=0775 state=directory 
+    - name: Copia o script para desabilitar Transparent Huge Pages
+      copy: src=templates/disable-transparent-hugepages dest=/etc/init.d/disable-transparent-hugepages mode=0755 backup=no force=yes
+    - name: Configura o script para ser executado no boot 
+      command: /usr/sbin/update-rc.d disable-transparent-hugepages defaults 
+    - name: Reincia o MongoDB 
+      service: name=mongod state=restarted
