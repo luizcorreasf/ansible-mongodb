@@ -2,7 +2,9 @@
 Instalacao do MongoDB em Ubuntu Server 16.04
 
 #Resumo
+
 Este playbook foi criado para automatizar a instalacao do MongoDB em um Linux Ubuntu 16.04, em uma instancia  EC2 na AWS
+
 Pela natureza do teste, nao foram considerados alguns pontos de instalacao para DEV/QA/PROD, como configuracao de parametros avancados, attach de volume para dados, entre outros.
 
 Ambiente utilizado:
